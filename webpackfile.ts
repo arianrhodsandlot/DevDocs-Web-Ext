@@ -55,15 +55,22 @@ const config: webpack.Configuration = {
       }, {
         loader: 'exports-loader',
         options: {
-          'app.Searcher': true
+          exports: 'default app.Searcher'
         }
       }, {
         loader: 'imports-loader',
         options: {
-          app: `>{config: {max_results: 50}}`,
-          $: 'jquery',
-          Events: '../lib/events.coffee',
-          util: '../lib/util.coffee'
+          imports: [{
+            name: '$',
+            moduleName: 'jquery'
+          }, {
+            name: 'Events',
+            moduleName: '../lib/events.coffee'
+          }, {
+            name: 'util',
+            moduleName: '../lib/util.coffee'
+          }],
+          additionalCode: 'app = {config: {max_results: 50}}'
         }
       }, {
         loader: 'coffee-loader'
@@ -77,13 +84,12 @@ const config: webpack.Configuration = {
       }, {
         loader: 'exports-loader',
         options: {
-          'app.models.Entry': true
+          exports: 'default app.models.Entry'
         }
       }, {
         loader: 'imports-loader',
         options: {
-          app: `>{models: {}, Model: function (o) {for(k in o) {this[k] = o[k]}}}`,
-          'app.Searcher': '../app/searcher.coffee'
+          additionalCode: 'const app = {models: {}, Model: function (o) {for(k in o) {this[k] = o[k]}}, Searcher: require("../app/searcher.coffee")}'
         }
       }, {
         loader: 'coffee-loader'
@@ -97,7 +103,7 @@ const config: webpack.Configuration = {
       }, {
         loader: 'exports-loader',
         options: {
-          'this.Events': true
+          exports: 'default this.Events'
         }
       }, {
         loader: 'coffee-loader'
@@ -111,7 +117,10 @@ const config: webpack.Configuration = {
       }, {
         loader: 'imports-loader',
         options: {
-          $: 'jquery'
+          imports: [{
+            name: '$',
+            moduleName: 'jquery'
+          }]
         }
       }, {
         loader: 'coffee-loader'
@@ -139,11 +148,13 @@ const config: webpack.Configuration = {
         loader: 'sass-loader',
         options: {
           sourceMap: true,
-          includePaths: [
-            'node_modules',
-            path.parse(require.resolve('compass-mixins')).dir,
-            path.resolve(__dirname, 'vendor/devdocs/assets/stylesheets/')
-          ]
+          sassOptions: {
+            includePaths: [
+              'node_modules',
+              path.parse(require.resolve('compass-mixins')).dir,
+              path.resolve(__dirname, 'vendor/devdocs/assets/stylesheets/')
+            ]
+          }
         }
       }]
     }, {
@@ -174,7 +185,7 @@ const config: webpack.Configuration = {
     }
   },
   plugins: [
-    new LodashModuleReplacementPlugin(),
+    new LodashModuleReplacementPlugin() as any,
     new HtmlWebpackPlugin({
       filename: 'popup.html',
       template: 'src/popup/popup.pug',

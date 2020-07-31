@@ -21,7 +21,7 @@ test.serial.beforeEach(async (t) => {
 test.serial('search and navigate in results', async (t) => {
   async function getClassNames (element: ElementHandle<Element>) {
     const jsHandle = await element.getProperty('className')
-    const classNames: string = await jsHandle.jsonValue()
+    const classNames = await jsHandle.jsonValue() as string
     return classNames.split(/\s+/u)
   }
 

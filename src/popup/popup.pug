@@ -7,6 +7,6 @@ html._mobile._theme-default
       link(href=css rel='stylesheet')
   body._native-scrollbars
     ._app
-    each chunk in htmlWebpackPlugin.files.chunks
-      unless chunk.entry.endsWith('-style.js')
-        script(src=chunk.entry)
+    each js in htmlWebpackPlugin.files.js
+      unless js.endsWith('-style.js')
+        script(src=js)

@@ -8,8 +8,10 @@ import Docs from './docs'
 
 async function getDocNames () {
   const defaultCategories = ['css', 'dom', 'dom_events', 'html', 'http', 'javascript']
-  const cookie = await browser.cookies.get({ url: 'http://devdocs.io',
-    name: 'docs' })
+  const cookie = await browser.cookies.get({
+    url: 'http://devdocs.io',
+    name: 'docs'
+  })
   const categories = cookie && cookie.value ? cookie.value.split('/') : defaultCategories
   return categories
 }
@@ -62,12 +64,14 @@ async function addMessageListener () {
       await docs.reload(await getDocNames())
     }
 
-    let result: object | null = null
+    let result: unknown = null
 
     switch (action) {
       case 'search-entry':
-        result = { status: 'success',
-          content: await searchEntry(payload) }
+        result = {
+          status: 'success',
+          content: await searchEntry(payload)
+        }
         break
       case 'auto-compelete-enabled-doc':
         result = await autoCompeleteEnabledDoc(payload)

@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import ky from 'ky'
-import Searcher from '../../vendor/devdocs/assets/javascripts/app/searcher.coffee'
-import Entry from '../../vendor/devdocs/assets/javascripts/models/entry.coffee'
+import { Searcher, Entry } from './external'
 
 class Docs {
   docNames: string[] = []
@@ -30,7 +29,7 @@ class Docs {
       ...{
         name: extendedDoc.fullName
       }
-    }) as { addAlias: Function } & typeof extendedDoc
+    }) as { addAlias: (alias: string) => void } & typeof extendedDoc
 
     if (docEntry.version) {
       docEntry.addAlias(doc.name)
@@ -42,9 +41,11 @@ class Docs {
       doc: { ...extendedDoc }
     }))
 
-    return { ...doc,
+    return {
+      ...doc,
       ...index,
-      ...docEntry }
+      ...docEntry
+    }
   }
 
   static async getDocIndexByName (docName: string) {
@@ -110,12 +111,13 @@ class Docs {
 
     const searcher = new Searcher()
 
-    return new Promise((resolve) => {
+    const promise = new Promise((resolve) => {
       searcher.on('results', (results: typeof entries) => {
         resolve(results)
       })
       searcher.find(entries, 'text', query)
     }) as Promise<typeof entries>
+    return promise
   }
 
   attemptToMatchOneDocInEnabledDocs (query: string) {

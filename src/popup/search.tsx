@@ -1,20 +1,27 @@
 import querystring from 'querystring'
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { object } from 'prop-types'
 import ReactDOM from 'react-dom'
 import browser from 'webextension-polyfill'
 import classnames from 'classnames'
 import key from 'keymaster'
-import { Link } from 'react-router-dom'
-import { Location, History } from 'history'
+import { Link, useLocation } from 'react-router-dom'
 import Docs from '../background/docs'
+import history from './history'
 
-Search.propTypes = {
-  location: PropTypes.object,
-  history: PropTypes.object
+function getDocVersion (doc: Doc) {
+  return doc.slug.includes('~') ? doc.slug.split('~')[1] : ''
 }
 
-export default function Search ({ location, history }: { location: Location; history: History }) {
+function getEntryUrl (entry: Entry) {
+  const [entryPath, entryHash] = entry.path.split('#')
+  const pathAndHash = entryHash ? `${entryPath}#${entryHash}` : `${entryPath}`
+  return `/${entry.doc.slug}/${pathAndHash}`
+}
+
+export default function Search () {
+  console.log('rendering search')
+  const location = useLocation()
   const [entries, setEntries] = useState(null as null | Unpromisify<ReturnType<Docs['searchEntries']>>)
   const [focusPos, setFocusPos] = useState(0)
   const [failMessage, setFailMessage] = useState('')
@@ -54,15 +61,10 @@ export default function Search ({ location, history }: { location: Location; his
       // eslint-disable-next-line react/no-find-dom-node
       const entryDomNode = ReactDOM.findDOMNode(ref.current)
       if (entryDomNode instanceof HTMLAnchorElement) {
-        entryDomNode.scrollIntoView({ block: 'end',
-          behavior: 'smooth' })
+        entryDomNode.scrollIntoView({ block: 'end', behavior: 'smooth' })
       }
     }
   }, [focusPos])
-
-  function getDocVersion (doc: Doc) {
-    return doc.slug.includes('~') ? doc.slug.split('~')[1] : ''
-  }
 
   function focusNextEntry () {
     if (!entries) {
@@ -78,12 +80,6 @@ export default function Search ({ location, history }: { location: Location; his
     }
     const maxFocusPos = entries.length - 1
     setFocusPos(focusPos === 0 ? maxFocusPos : focusPos - 1)
-  }
-
-  function getEntryUrl (entry: Entry) {
-    const [entryPath, entryHash] = entry.path.split('#')
-    const pathAndHash = entryHash ? `${entryPath}#${entryHash}` : `${entryPath}`
-    return `/${entry.doc.slug}/${pathAndHash}`
   }
 
   function enterFocusEntry () {
@@ -124,8 +120,7 @@ export default function Search ({ location, history }: { location: Location; his
     try {
       response = await browser.runtime.sendMessage({
         action: 'search-entry',
-        payload: { query,
-          scope }
+        payload: { query, scope }
       }) as { status: 'success'; content: Entry[] }
       entries = response.content
     } catch (error) {
@@ -180,7 +175,7 @@ export default function Search ({ location, history }: { location: Location; his
   return (
     <div className='_sidebar'>
       <div className='_list'>
-        {entries ? entries.length > 0 ? results : noResults : null}
+        {entries ? (entries.length > 0 ? results : noResults) : null}
       </div>
     </div>
   )

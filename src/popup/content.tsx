@@ -1,19 +1,17 @@
 import url from 'url'
 import React, { useState, useEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
 import browser from 'webextension-polyfill'
 import classnames from 'classnames'
 import key from 'keymaster'
 import ky from 'ky'
-import { Location, History } from 'history'
+import { History } from 'history'
+import { useLocation } from 'react-router-dom'
 import { lruGetItem, lruSetItem } from '../common/lru'
+import history from './history'
 
-Content.propTypes = {
-  location: PropTypes.object,
-  history: PropTypes.object
-}
-
-export default function Content ({ location, history }: { location: Location; history: History }) {
+export default function Content () {
+  console.log('rendering content')
+  const location = useLocation()
   const [loading, setLoading] = useState(false)
   const [contentUrl, setContentUrl] = useState('')
   const [content, setContent] = useState('')
@@ -27,18 +25,22 @@ export default function Content ({ location, history }: { location: Location; hi
 
     key('space', () => {
       if (pageRef.current) {
-        pageRef.current.scrollBy({ top: 150,
+        pageRef.current.scrollBy({
+          top: 150,
           left: 0,
-          behavior: 'smooth' })
+          behavior: 'smooth'
+        })
       }
       return false
     })
 
     key('shift+space', () => {
       if (pageRef.current) {
-        pageRef.current.scrollBy({ top: -150,
+        pageRef.current.scrollBy({
+          top: -150,
           left: 0,
-          behavior: 'smooth' })
+          behavior: 'smooth'
+        })
       }
       return false
     });
@@ -111,7 +113,7 @@ export default function Content ({ location, history }: { location: Location; hi
     }
     if (entryHash) {
       const scrollTargetId = entryHash.startsWith('.') ? entryHash.slice(1) : entryHash
-      const scrollTarget = document.querySelector(`div#${scrollTargetId}`)
+      const scrollTarget: HTMLDivElement | null = document.querySelector(`div#${scrollTargetId}`)
       if (scrollTarget) {
         pageRef.current.scrollTo(0, scrollTarget.offsetTop)
       }
@@ -134,7 +136,7 @@ export default function Content ({ location, history }: { location: Location; hi
     if (href.startsWith('http://') || href.startsWith('https://')) {
       browser.tabs.create({ url: href })
     } else {
-      const currentUrl = history.location.pathname
+      const currentUrl = location.pathname
       // eslint-disable-next-line node/no-deprecated-api
       const targetUrl = url.resolve(currentUrl, href)
       history.replace(targetUrl)

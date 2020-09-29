@@ -1,21 +1,38 @@
 import url from 'url'
 import querystring from 'querystring'
 import React, { useState, useEffect, useRef } from 'react'
-import { withRouter } from 'react-router'
+import { useLocation, useNavigate } from 'react-router-dom'
 import key from 'keymaster'
 import browser from 'webextension-polyfill'
-import { Location, History } from 'history'
 
 function getInitialInputState () {
   const scope = localStorage.getItem('scope') || ''
   const query = localStorage.getItem('query') || ''
   const docName = localStorage.getItem('docName') || ''
-  return { scope,
+  return {
+    scope,
     query,
-    docName }
+    docName
+  }
 }
 
-function Header ({ location, history }: { location: Location; history: History }) {
+async function attemptCompeleteDocName (docScope: string) {
+  if (docScope === '') {
+    return ''
+  }
+  const doc = await browser.runtime.sendMessage({
+    action: 'auto-compelete-enabled-doc',
+    payload: { scope: docScope }
+  })
+  if (doc) {
+    return doc.fullName
+  }
+  return ''
+}
+
+function Header () {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [inputPaddingLeft, setInputPaddingLeft] = useState(0)
   const initialInputState = getInitialInputState()
   const [scope, setScope] = useState(initialInputState.scope)
@@ -23,6 +40,10 @@ function Header ({ location, history }: { location: Location; history: History }
   const [docName, setDocName] = useState(initialInputState.docName)
   const inputRef = useRef<HTMLInputElement>()
   const scopeRef = useRef<HTMLInputElement>()
+
+  function clearDoc () {
+    navigate({ pathname: '/', search: '' }, { replace: true })
+  }
 
   useEffect(() => {
     if (!inputRef.current) {
@@ -81,33 +102,14 @@ function Header ({ location, history }: { location: Location; history: History }
       scope: parsed.scope ? `${parsed.scope}` : ''
     }
   }
-
-  function clearDoc () {
-    history.replace('/')
-  }
-
-  async function attemptCompeleteDocName (docScope: string) {
-    if (docScope === '') {
-      return ''
-    }
-    const doc = await browser.runtime.sendMessage({
-      action: 'auto-compelete-enabled-doc',
-      payload: { scope: docScope }
-    })
-    if (doc) {
-      return doc.fullName
-    }
-    return ''
-  }
-
   async function completeDoc () {
     const completedDocName = await attemptCompeleteDocName(query)
     if (completedDocName) {
       const urlQuery = { scope: query }
-      history.replace(url.format({
+      navigate(url.format({
         pathname: '/search',
         query: urlQuery
-      }))
+      }), { replace: true })
       if (inputRef.current) {
         inputRef.current.value = ''
       }
@@ -115,21 +117,16 @@ function Header ({ location, history }: { location: Location; history: History }
   }
 
   function handleChange (e: React.ChangeEvent<HTMLInputElement>) {
-    const query = e.currentTarget.value
-    const urlQuery = {
-      query: '',
-      scope: ''
-    }
+    const { value: query } = e.currentTarget
     if (query) {
-      urlQuery.query = query
+      const urlQuery = { query, ...scope && { scope } }
+      navigate(url.format({
+        pathname: '/search',
+        query: urlQuery
+      }), { replace: true })
+    } else {
+      clearDoc()
     }
-    if (scope) {
-      urlQuery.scope = scope
-    }
-    history.replace(url.format({
-      pathname: '/search',
-      query: urlQuery
-    }))
   }
 
   function handleKeyDown (e: React.KeyboardEvent<HTMLInputElement>) {
@@ -159,7 +156,8 @@ function Header ({ location, history }: { location: Location; history: History }
           onChange={handleChange}
           autoFocus
           ref={inputRef as React.MutableRefObject<HTMLInputElement>}
-          style={docName ? { paddingLeft: inputPaddingLeft } : {}} onKeyDown={handleKeyDown} />
+          style={docName ? { paddingLeft: inputPaddingLeft } : {}}
+          onKeyDown={handleKeyDown} />
         {docName ? <div className='_search-tag' ref={scopeRef as React.MutableRefObject<HTMLDivElement>}>{docName}</div> : null}
       </form>
 
@@ -172,4 +170,4 @@ function Header ({ location, history }: { location: Location; history: History }
   )
 }
 
-export default withRouter(Header)
+export default Header

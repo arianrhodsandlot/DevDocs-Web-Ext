@@ -29,99 +29,23 @@ const config: webpack.Configuration = {
       test: /\.(png|jpg|gif|ttf|eot|woff|woff2)$/u,
       use: [{
         loader: 'url-loader',
-        options: {
-          limit: 8192
-        }
+        options: { limit: 8192 }
       }]
     }, {
       test: /\.tsx?$/u,
       exclude: /node_modules/u,
       use: [{
-        loader: 'cache-loader'
-      }, {
         loader: 'thread-loader'
       }, {
         loader: 'ts-loader',
-        options: {
-          happyPackMode: true
-        }
+        options: { happyPackMode: true }
       }]
     }, {
-      test: path.resolve(__dirname, 'vendor/devdocs/assets/javascripts/app/searcher.coffee'),
+      test: /\.coffee?$/u, // path.resolve(__dirname, 'vendor/devdocs/assets/javascripts/app/searcher.coffee'),
       use: [{
-        loader: 'cache-loader'
-      }, {
         loader: 'thread-loader'
       }, {
-        loader: 'exports-loader',
-        options: {
-          exports: 'default app.Searcher'
-        }
-      }, {
-        loader: 'imports-loader',
-        options: {
-          imports: [{
-            name: '$',
-            moduleName: 'jquery'
-          }, {
-            name: 'Events',
-            moduleName: '../lib/events.coffee'
-          }, {
-            name: 'util',
-            moduleName: '../lib/util.coffee'
-          }],
-          additionalCode: 'app = {config: {max_results: 50}}'
-        }
-      }, {
-        loader: 'coffee-loader'
-      }]
-    }, {
-      test: path.resolve(__dirname, 'vendor/devdocs/assets/javascripts/models/entry.coffee'),
-      use: [{
-        loader: 'cache-loader'
-      }, {
-        loader: 'thread-loader'
-      }, {
-        loader: 'exports-loader',
-        options: {
-          exports: 'default app.models.Entry'
-        }
-      }, {
-        loader: 'imports-loader',
-        options: {
-          additionalCode: 'const app = {models: {}, Model: function (o) {for(k in o) {this[k] = o[k]}}, Searcher: require("../app/searcher.coffee")}'
-        }
-      }, {
-        loader: 'coffee-loader'
-      }]
-    }, {
-      test: path.resolve(__dirname, 'vendor/devdocs/assets/javascripts/lib/events.coffee'),
-      use: [{
-        loader: 'cache-loader'
-      }, {
-        loader: 'thread-loader'
-      }, {
-        loader: 'exports-loader',
-        options: {
-          exports: 'default this.Events'
-        }
-      }, {
-        loader: 'coffee-loader'
-      }]
-    }, {
-      test: path.resolve(__dirname, 'vendor/devdocs/assets/javascripts/lib/util.coffee'),
-      use: [{
-        loader: 'cache-loader'
-      }, {
-        loader: 'thread-loader'
-      }, {
-        loader: 'imports-loader',
-        options: {
-          imports: [{
-            name: '$',
-            moduleName: 'jquery'
-          }]
-        }
+        loader: 'raw-loader'
       }, {
         loader: 'coffee-loader'
       }]
@@ -131,9 +55,7 @@ const config: webpack.Configuration = {
         loader: MiniCssExtractPlugin.loader
       }, {
         loader: 'css-loader',
-        options: {
-          sourceMap: true
-        }
+        options: { sourceMap: true }
       }]
     }, {
       test: /\.(scss|sass)$/u,
@@ -141,9 +63,7 @@ const config: webpack.Configuration = {
         loader: MiniCssExtractPlugin.loader
       }, {
         loader: 'css-loader',
-        options: {
-          sourceMap: true
-        }
+        options: { sourceMap: true }
       }, {
         loader: 'sass-loader',
         options: {
@@ -160,8 +80,6 @@ const config: webpack.Configuration = {
     }, {
       test: /\.(pug)$/u,
       use: [{
-        loader: 'cache-loader'
-      }, {
         loader: 'thread-loader'
       }, {
         loader: 'pug-loader'
@@ -185,7 +103,7 @@ const config: webpack.Configuration = {
     }
   },
   plugins: [
-    new LodashModuleReplacementPlugin() as any,
+    new LodashModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       filename: 'popup.html',
       template: 'src/popup/popup.pug',

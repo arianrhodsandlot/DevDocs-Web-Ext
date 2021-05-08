@@ -16,7 +16,7 @@
     "jquery": "^3.5.0",
     "keymaster": "^1.6.2",
     "ky": "^0.27.0",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "material-design-icons": "^3.0.1",
     "prop-types": "^15.7.2",
     "raven-js": "^3.27.2",
